@@ -1,8 +1,9 @@
-using UserAPIControl.Data;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using UserAPIControl.Data;
+using UserAPIControl.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<TokenService>(); // Register TokenService for dependency injection
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(

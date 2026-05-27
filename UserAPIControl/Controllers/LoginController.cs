@@ -7,6 +7,7 @@ using System.Text;
 using UserAPIControl.Data;
 using UserAPIControl.DTOs;
 using UserAPIControl.Models;
+using UserAPIControl.Services;
 
 
 namespace UserAPIControl.Controllers;
@@ -17,12 +18,12 @@ namespace UserAPIControl.Controllers;
 public class LoginController : ControllerBase
 {
     private readonly AppDbContext _context;
-    private readonly IConfiguration _configuration;
+    private readonly TokenService _tokenService;
 
-    public LoginController(AppDbContext context, IConfiguration configuration)
+    public LoginController(AppDbContext context, TokenService tokenService)
     {
         _context = context;
-        _configuration = configuration;
+        _tokenService = tokenService;
     }
 
 
@@ -49,40 +50,9 @@ public class LoginController : ControllerBase
             return Unauthorized("Invalid credentials.");
         }
 
-        string token = GenerateJwtToken(user);
+        string token = _tokenService.GenerateJwtToken(user);
 
         return Ok(token);
     }
 
-    private string GenerateJwtToken(User user)
-    {
-        var claims = new[]
-        {
-        new Claim(ClaimTypes.Name, user.Name),
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-    };
-
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(
-                _configuration["Jwt:Key"]!
-            )
-        );
-
-        var credentials =
-            new SigningCredentials(
-                key,
-                SecurityAlgorithms.HmacSha256
-            );
-
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.Now.AddHours(2),
-            signingCredentials: credentials
-        );
-
-        return new JwtSecurityTokenHandler()
-            .WriteToken(token);
-    }
 }

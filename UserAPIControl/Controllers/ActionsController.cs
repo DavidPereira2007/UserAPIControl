@@ -27,4 +27,20 @@ public class ActionsController : ControllerBase
         return Ok("Protected route.");
     }
 
+    [HttpPost("DeleteUser")]
+    public async Task<IActionResult> DeleteUser(LoginDto dto)
+    {
+        var user =
+            await _context.Users
+                .FirstOrDefaultAsync(u => u.Name == dto.Name);
+        if (user == null)
+        {
+            return NotFound("User not found.");
+        }
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+        return Ok("User deleted.");
+    }
+
+
 }
